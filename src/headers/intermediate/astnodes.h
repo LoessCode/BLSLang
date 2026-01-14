@@ -40,13 +40,18 @@ namespace BLSL
         };
 
         /*
-         *  LITERALS
+         *  ATOMS
          */
 
         struct Literal : public Node
         {
             LiteralType type;
             std::string value;
+        };
+
+        struct Variable : public Node
+        {
+            std::string identifier;
         };
 
         /*
@@ -126,7 +131,5 @@ namespace BLSL
     }
 
 }
-
-
 
 #endif //BLSLANG_ASTNODES_H

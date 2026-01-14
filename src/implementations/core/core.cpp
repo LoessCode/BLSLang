@@ -51,27 +51,27 @@ namespace BLSL
         }}
     };
 
-    const std::unordered_map<OperatorType, int> OPERATOR_PRECEDENCE = {
-        {OperatorType::POW, 220},
-        {OperatorType::MUL, 210},
-        {OperatorType::DIV, 210},
-        {OperatorType::ADD, 200},
-        {OperatorType::SUB, 200},
+    const std::unordered_map<OperatorType, std::pair<int, int>> OPERATOR_PRECEDENCE = {
+        {OperatorType::POW, {220, 222}},
+        {OperatorType::MUL, {210, 212}},
+        {OperatorType::DIV, {210, 212}},
+        {OperatorType::ADD, {200, 202}},
+        {OperatorType::SUB, {200, 202}},
 
-        {OperatorType::BW_LSHIFT, 130},
-        {OperatorType::BW_RSHIFT, 130},
-        {OperatorType::BW_NOT, 120},
-        {OperatorType::BW_AND, 110},
-        {OperatorType::BW_OR, 100},
+        {OperatorType::BW_LSHIFT, {130, 132}},
+        {OperatorType::BW_RSHIFT, {130, 132}},
+        {OperatorType::BW_NOT, {120, 122}},
+        {OperatorType::BW_AND, {110, 112}},
+        {OperatorType::BW_OR, {100, 102}},
     };
 
-    const std::unordered_map<ComparatorType, int> COMPARATOR_PRECEDENCE = {
-        {ComparatorType::LESSER, 50},
-        {ComparatorType::GREATER, 50},
-        {ComparatorType::EQUAL, 40},
-        {ComparatorType::NOT, 30},
-        {ComparatorType::AND, 20},
-        {ComparatorType::OR, 10}
+    const std::unordered_map<ComparatorType, std::pair<int, int>> COMPARATOR_PRECEDENCE = {
+        {ComparatorType::LESSER, {50, 52}},
+        {ComparatorType::GREATER, {50, 52}},
+        {ComparatorType::EQUAL, {40, 42}},
+        {ComparatorType::NOT, {30, 32}},
+        {ComparatorType::AND, {20, 22}},
+        {ComparatorType::OR, {10, 12}}
     };
 
 
