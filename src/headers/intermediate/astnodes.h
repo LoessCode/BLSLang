@@ -39,10 +39,11 @@ namespace BLSL
             virtual void invite(Visitor& visitor) = 0;
         };
 
-        struct BodyNode
+        struct BodyNode : Node
         {
-            virtual ~BodyNode() = default;
             std::vector<Node_t> nodes;
+
+            void invite(Visitor& visitor) override;
         };
 
         /*
@@ -110,13 +111,17 @@ namespace BLSL
             std::string identifier;
             FormalParameterDeclaration_t parameters;
             BodyNode_t body;
+
+            void invite(Visitor& visitor) override;
         };
 
         struct If : public Node
         {
             Node_t condition;
-            BodyNode_t body;
+            Node_t body;
             std::optional<Node_t> elseBranch;
+
+            void invite(Visitor& visitor) override;
         };
 
         struct For : public Node
@@ -125,13 +130,17 @@ namespace BLSL
             std::optional<Node_t> condition;
             std::optional<Node_t> update;
 
-            BodyNode_t body;
+            Node_t body;
+
+            void invite(Visitor& visitor) override;
         };
 
         struct While : public Node
         {
             Node_t condition;
-            BodyNode_t body;
+            Node_t body;
+
+            void invite(Visitor& visitor) override;
         };
 
         /*
@@ -151,10 +160,17 @@ namespace BLSL
         class Visitor
         {
         public:
+            virtual void visit(BodyNode* node) = 0;
+
             virtual void visit(BinaryOperator* node) = 0;
             virtual void visit(UnaryOperator* node) = 0;
             virtual void visit(Literal* node) = 0;
             virtual void visit(Variable* node) = 0;
+
+            virtual void visit(Func* node) = 0;
+            virtual void visit(For* node) = 0;
+            virtual void visit(While* node) = 0;
+            virtual void visit(If* node) = 0;
         };
 
         class PrintVisitor : public Visitor
@@ -176,10 +192,17 @@ namespace BLSL
             ~PrintVisitor();
 
         public:
+            void visit(BodyNode* node) override;
+
             void visit(BinaryOperator* node) override;
             void visit(UnaryOperator* node) override;
             void visit(Literal* node) override;
             void visit(Variable* node) override;
+
+            void visit(Func* node) override;
+            void visit(For* node) override;
+            void visit(While* node) override;
+            void visit(If* node) override;
         };
     }
 

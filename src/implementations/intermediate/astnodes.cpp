@@ -34,6 +34,18 @@ BLSL::ASTNode::PrintVisitor::~PrintVisitor()
     _outFile.close();
 }
 
+void BLSL::ASTNode::PrintVisitor::visit(BodyNode *node)
+{
+    _out() << "{\n";
+    _indent();
+    for (auto& subNode : node->nodes)
+    {
+        subNode->invite(*this);
+    }
+    _unindent();
+    _out() << "}\n";
+}
+
 void BLSL::ASTNode::PrintVisitor::visit(BinaryOperator *node)
 {
     _out() << "Binary Operator: " << static_cast<int>(node->type) << "\n";
@@ -73,6 +85,29 @@ void BLSL::ASTNode::PrintVisitor::visit(Variable *node)
     _out() << "Variable: " << node->identifier << std::endl;
 }
 
+void BLSL::ASTNode::PrintVisitor::visit(Func *node) {}
+void BLSL::ASTNode::PrintVisitor::visit(For *node) {}
+void BLSL::ASTNode::PrintVisitor::visit(While *node) {}
+
+void BLSL::ASTNode::PrintVisitor::visit(If *node)
+{
+    _out() << "if (\n";
+    node->condition->invite(*this);
+    _out() << ")\n";
+    node->body->invite(*this);
+
+    if (node->elseBranch.has_value())
+    {
+        _out() << "else\n";
+        node->elseBranch.value()->invite(*this);
+    }
+}
+
+void BLSL::ASTNode::BodyNode::invite(Visitor &visitor)
+{
+    visitor.visit(this);
+}
+
 void BLSL::ASTNode::Literal::invite(Visitor &visitor)
 {
     visitor.visit(this);
@@ -89,6 +124,26 @@ void BLSL::ASTNode::UnaryOperator::invite(Visitor &visitor)
 }
 
 void BLSL::ASTNode::BinaryOperator::invite(Visitor &visitor)
+{
+    visitor.visit(this);
+}
+
+void BLSL::ASTNode::Func::invite(Visitor &visitor)
+{
+    visitor.visit(this);
+}
+
+void BLSL::ASTNode::If::invite(Visitor &visitor)
+{
+    visitor.visit(this);
+}
+
+void BLSL::ASTNode::For::invite(Visitor &visitor)
+{
+    visitor.visit(this);
+}
+
+void BLSL::ASTNode::While::invite(Visitor &visitor)
 {
     visitor.visit(this);
 }

@@ -76,6 +76,101 @@ std::expected<std::unique_ptr<BLSL::ASTNode::BinaryOperator>, BLSL::Token> BLSL:
     }
 }
 
+bool BLSL::Parser::_match_punctuator(PunctuatorType pType) const
+{
+    if (_peek().type == TokenType::PUNCTUATOR)
+    {
+        if (std::get<PunctuatorType>(_peek().subType) == pType)
+        {
+            return true;
+        }
+        return false;
+    }
+    return false;
+}
+
+bool BLSL::Parser::_match_keyword(KeywordType kType) const
+{
+    if (_peek().type == TokenType::KEYWORD)
+    {
+        if (std::get<KeywordType>(_peek().subType) == kType)
+        {
+            return true;
+        }
+        return false;
+    }
+    return false;
+}
+
+void BLSL::Parser::_consume_punctuator(PunctuatorType pType)
+{
+    if (_peek().type == TokenType::PUNCTUATOR)
+    {
+
+        Token token = _next();
+        if (std::get<PunctuatorType>(token.subType) != pType)
+        {
+            //TODO: THrow
+            throw;
+        }
+    }
+    else
+    {
+        //TODO: THrow
+        throw;
+    }
+}
+
+void BLSL::Parser::_consume_keyword(KeywordType kType)
+{
+    if (_peek().type == TokenType::KEYWORD)
+    {
+        Token token = _next();
+        if (std::get<KeywordType>(token.subType) != kType)
+        {
+            //TODO: THROW
+            throw;
+        }
+    }
+    else
+    {
+        //TODO: THrow
+        throw;
+    }
+}
+
+BLSL::Node_t BLSL::Parser::_parse_for() {}
+BLSL::Node_t BLSL::Parser::_parse_while() {}
+
+
+BLSL::Node_t BLSL::Parser::_parse_if()
+{
+    ASTNode::If ifNode;
+
+    _consume_punctuator(PunctuatorType::LPAREN);
+
+    ifNode.condition = _parse_expression();
+
+    _consume_punctuator(PunctuatorType::RPAREN);
+
+    ifNode.body = _parse_statement();
+
+    if (_match_keyword(KeywordType::ELSE))
+    {
+        _consume_keyword(KeywordType::ELSE);
+        ifNode.elseBranch = _parse_statement();
+
+    }
+    else
+    {
+        ifNode.elseBranch = std::nullopt;
+    }
+
+    return std::make_unique<ASTNode::If>(std::move(ifNode));
+}
+
+BLSL::Node_t BLSL::Parser::_parse_else() {}
+BLSL::Node_t BLSL::Parser::_parse_func() {}
 
 BLSL::Node_t BLSL::Parser::_parse_expression(int lowestPrecedence)
 {
@@ -88,6 +183,8 @@ BLSL::Node_t BLSL::Parser::_parse_expression(int lowestPrecedence)
             _next();
 
             LHS = _parse_expression();
+
+            _consume_punctuator(PunctuatorType::RPAREN);
         }
         else
         {
@@ -128,7 +225,6 @@ BLSL::Node_t BLSL::Parser::_parse_expression(int lowestPrecedence)
         {
             if (std::get<PunctuatorType>(_peek().subType) == PunctuatorType::RPAREN)
             {
-                _next();
                 break;
             }
         }
@@ -153,6 +249,61 @@ BLSL::Node_t BLSL::Parser::_parse_expression(int lowestPrecedence)
     return std::move(LHS);
 }
 
+BLSL::BodyNode_t BLSL::Parser::_parse_block()
+{
+    _consume_punctuator(PunctuatorType::LBRACE);
+    ASTNode::BodyNode bodyNode;
+
+    while (!_match_punctuator(PunctuatorType::RBRACE))
+    {
+        bodyNode.nodes.emplace_back(_parse_expression());
+    }
+
+    _consume_punctuator(PunctuatorType::RBRACE);
+
+    return std::make_unique<ASTNode::BodyNode>(std::move(bodyNode));
+}
+
+BLSL::Node_t BLSL::Parser::_parse_statement()
+{
+    if (_match_punctuator(PunctuatorType::LBRACE))
+    {
+        BodyNode_t block = _parse_block();
+        return block;
+    }
+
+    switch (_peek().type)
+    {
+        case TokenType::KEYWORD:
+            switch (std::get<KeywordType>(_peek().subType))
+            {
+            case KeywordType::FOR:
+                _next();
+                return _parse_for();
+
+            case KeywordType::WHILE:
+                _next();
+                return _parse_while();
+
+            case KeywordType::IF:
+                _next();
+                return _parse_if();
+
+            case KeywordType::ELSE:
+                _next();
+                return _parse_else();
+
+            case KeywordType::FUNC:
+                _next();
+                return _parse_func();
+            }
+
+        default:
+            throw;
+            //TODO: Throw
+    }
+}
+
 BLSL::Parser::Parser(std::unique_ptr<std::vector<Token>> in)
     : _tokens(std::move(in)), _pos(0)
 {
@@ -161,6 +312,14 @@ BLSL::Parser::Parser(std::unique_ptr<std::vector<Token>> in)
 
 BLSL::Node_t BLSL::Parser::parse()
 {
-    //TODO: Actual parser
-    return _parse_expression();
+    ASTNode::BodyNode bodyNode;
+
+    while (_pos < _tokens->size())
+    {
+        //_parse_statement();
+        bodyNode.nodes.emplace_back(_parse_statement());
+    }
+
+    return std::make_unique<ASTNode::BodyNode>(std::move(bodyNode));
+
 }
