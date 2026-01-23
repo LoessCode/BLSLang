@@ -151,5 +151,34 @@ struct std::formatter<BLSL::Token> : std::formatter<std::string>
     }
 
 };
+namespace std
+{
+    inline ostream& operator<<(ostream& os, const BLSL::Token tok)
+    {
+        int subTypeCode = std::visit(
+            [](auto x)
+            {
+                return static_cast<int>(x);
+            },
+            tok.subType
+        );
+
+        os << "<Token: " << static_cast<int>(tok.type) << "," << subTypeCode;
+        if (tok.value.has_value())
+        {
+            os << " '" << tok.value.value() << "'";
+        }
+        os << "> [";
+        os << tok.debugPos.line << ":" << tok.debugPos.column << "]";
+        return os;
+    }
+
+    inline ostream& operator<<(ostream& os, const BLSL::DebugPosition debugPos)
+    {
+        os << "Line: " << debugPos.line << " Column: " << debugPos.column;
+        return os;
+    }
+}
+
 
 #endif //BLSLANG_COREDEF_H

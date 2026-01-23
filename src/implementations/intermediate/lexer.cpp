@@ -293,8 +293,7 @@ void BLSL::Lexer::mount_source_from_file(const std::string &path)
 
     if (!scriptFile)
     {
-        //TODO: Console Logging
-        throw;
+        throw Error::FileNotFound(path);
     }
 
     scriptFile.seekg(0, std::ios::end);
@@ -337,8 +336,7 @@ std::unique_ptr<std::vector<BLSL::Token>> BLSL::Lexer::lex()
 
         if (_carat != oldPos) continue;
 
-        //TODO: Console Log: Parse failed.
-        throw;
+        throw Error::UnidentifiedSequence(_debugPos);
     }
 
 
@@ -369,9 +367,8 @@ void BLSL::Lexer::lex_to_file(const std::string &path)
 
         if (_carat != oldPos) continue;
 
-        //TODO: Console Log: Parse failed.
         outFile.close();
-        throw;
+        throw Error::UnidentifiedSequence(_debugPos);
     }
 
     outFile.close();

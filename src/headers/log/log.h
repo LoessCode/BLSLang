@@ -8,6 +8,8 @@
 #include <sstream>
 #include <string>
 
+#include "../core/blsl.h"
+
 namespace BLSL
 {
     namespace Log
@@ -93,6 +95,7 @@ namespace std
         os << oss.str();
         return os;
     }
+
 }
 
 #endif //BLSLANG_LOG_H

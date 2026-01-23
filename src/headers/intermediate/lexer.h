@@ -6,6 +6,7 @@
 #define BLSLANG_LEXER_H
 
 #include "../core/blsl.h"
+#include "../err/err.h"
 #include <fstream>
 #include <functional>
 

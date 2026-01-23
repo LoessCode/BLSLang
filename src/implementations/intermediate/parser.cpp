@@ -141,14 +141,12 @@ void BLSL::Parser::_consume_punctuator(PunctuatorType pType)
         Token token = _next();
         if (std::get<PunctuatorType>(token.subType) != pType)
         {
-            //TODO: THrow
-            throw;
+            throw Error::BadConsume(token);
         }
     }
     else
     {
-        //TODO: THrow
-        throw;
+        throw Error::UnexpectedToken(TokenType::PUNCTUATOR, _peek());
     }
 }
 
@@ -160,14 +158,12 @@ void BLSL::Parser::_consume_operator(OperatorType oType)
         Token token = _next();
         if (std::get<OperatorType>(token.subType) != oType)
         {
-            //TODO: THrow
-            throw;
+            throw Error::BadConsume(token);
         }
     }
     else
     {
-        //TODO: THrow
-        throw;
+        throw Error::UnexpectedToken(TokenType::OPERATOR, _peek());
     }
 }
 
@@ -178,14 +174,12 @@ void BLSL::Parser::_consume_comparator(ComparatorType cType)
         Token token = _next();
         if (std::get<ComparatorType>(token.subType) != cType)
         {
-            //TODO: THrow
-            throw;
+            throw Error::BadConsume(token);
         }
     }
     else
     {
-        //TODO: THrow
-        throw;
+        throw Error::UnexpectedToken(TokenType::COMPARATOR, _peek());
     }
 }
 
@@ -196,14 +190,12 @@ void BLSL::Parser::_consume_keyword(KeywordType kType)
         Token token = _next();
         if (std::get<KeywordType>(token.subType) != kType)
         {
-            //TODO: THROW
-            throw;
+            throw Error::BadConsume(token);
         }
     }
     else
     {
-        //TODO: THrow
-        throw;
+        throw Error::UnexpectedToken(TokenType::KEYWORD, _peek());
     }
 }
 
@@ -213,14 +205,12 @@ size_t BLSL::Parser::_consume_compile_time_size()
     auto literal = _get_literal();
     if (!literal.has_value())
     {
-        //TODO: Throw
-        throw;
+        throw Error::UnexpectedToken(TokenType::LITERAL, literal.error());
     }
 
     if (std::get<LiteralType>(literal->subType) != LiteralType::INT)
     {
-        //TODO: Throw
-        throw;
+        throw Error::UnexpectedToken(TokenType::LITERAL, literal.error());
     }
 
     _consume_comparator(ComparatorType::GREATER);
@@ -237,14 +227,12 @@ std::vector<size_t> BLSL::Parser::_consume_compile_time_size_list()
         auto literal = _get_literal();
         if (!literal.has_value())
         {
-            //TODO: Throw
-            throw;
+            throw Error::UnexpectedToken(TokenType::LITERAL, literal.error());
         }
 
         if (std::get<LiteralType>(literal->subType) != LiteralType::INT)
         {
-            //TODO: Throw
-            throw;
+            throw Error::UnexpectedToken(TokenType::LITERAL, literal.error());
         }
 
         result.push_back(std::stoi(literal->value.value()));
@@ -321,9 +309,8 @@ BLSL::Node_t BLSL::Parser::_parse_if()
 
 BLSL::Node_t BLSL::Parser::_parse_else()
 {
-    //TODO: Error, else without if
     Token head = _next();
-    throw;
+    throw Error::MissingIf(head.debugPos);
 }
 
 BLSL::Node_t BLSL::Parser::_parse_func()
@@ -335,8 +322,7 @@ BLSL::Node_t BLSL::Parser::_parse_func()
     auto identifierExpected = _get_identifier();
     if (!identifierExpected.has_value())
     {
-        //TODO: THROW
-        throw;
+        throw Error::UnexpectedToken(TokenType::IDENTIFIER, identifierExpected.error());
     }
     funcNode.identifier = identifierExpected.value();
 
@@ -350,9 +336,9 @@ BLSL::Node_t BLSL::Parser::_parse_func()
         auto identifierExpected = _get_identifier();
         if (!identifierExpected.has_value())
         {
-            //TODO: Throw
-            throw;
+            throw Error::UnexpectedToken(TokenType::IDENTIFIER, identifierExpected.error());
         }
+
         formalParam.identifier = identifierExpected.value();
         funcNode.parameters.push_back(formalParam);
 
@@ -365,6 +351,7 @@ BLSL::Node_t BLSL::Parser::_parse_func()
 
     for (size_t i = 0; i < funcNode.parameters.size(); i++)
     {
+        //TODO: THROW
         if (i == compileSizes.size()) throw;
         funcNode.parameters[i].size = compileSizes[i];
     }
@@ -394,8 +381,7 @@ BLSL::Node_t BLSL::Parser::_parse_alloc()
     auto identifierExpected = _get_identifier();
     if (!identifierExpected.has_value())
     {
-        //TODO throw
-        throw;
+        throw Error::UnexpectedToken(TokenType::IDENTIFIER, identifierExpected.error());
     }
 
     allocNode.identifier = identifierExpected.value();
@@ -420,7 +406,7 @@ BLSL::Node_t BLSL::Parser::_parse_expression(int lowestPrecedence)
         }
         else
         {
-            throw;
+            throw Error::UnexpectedToken(TokenType::PUNCTUATOR, _peek());
         }
     }
     else if (_peek().type == TokenType::OPERATOR)
@@ -442,8 +428,7 @@ BLSL::Node_t BLSL::Parser::_parse_expression(int lowestPrecedence)
         auto LHSExpected = _get_atom();
         if (!LHSExpected.has_value())
         {
-            //TODO: Errors. std::print("{}", LHSExpected.error());
-            throw;
+            throw Error::UnexpectedToken(TokenType::LITERAL, LHSExpected.error());
         }
 
         LHS = std::move(LHSExpected.value());
@@ -537,8 +522,7 @@ BLSL::Node_t BLSL::Parser::_parse_statement()
 
 
         default:
-            throw;
-            //TODO: Throw
+            throw Error::BadToken(_next());
     }
 }
 

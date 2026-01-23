@@ -8,6 +8,7 @@
 #include <expected>
 
 #include "astnodes.h"
+#include "../err/err.h"
 
 namespace BLSL
 {
