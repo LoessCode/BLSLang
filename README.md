@@ -13,7 +13,7 @@
     Or, they can be added as strings, in which case the bytes are concatenated. They can be represented as any type for display too. 
 
 ## <u> Implementation </u>
-- Register VM with custom bytecode.
-- Lexer-Parser-Compiler pipeline to convert textual code to bytecode through AST intermediate.
-- Dynamic register layouts determined at compile time to support N Sized values without memory wastage / limits.
-- Compile time shared layout optimization to greatly speed up expressions within looping constructs.
+- Register VM with custom bytecode
+- Lexer-Parser-Compiler pipeline to convert textual code to bytecode through AST intermediate
+- Pure reference registers, which hold references to heap / stack
+- Constant Pool for literals, instructions do not support immediate values
