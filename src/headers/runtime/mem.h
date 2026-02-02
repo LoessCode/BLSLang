@@ -40,6 +40,7 @@ namespace BLSVM
         Stack();
 
         void push(const ubyte_t* data, size_t size);
+        void push(size_t size);
         void write(const ubyte_t* data, size_t elementIndex);
         void pop();
 
@@ -62,7 +63,24 @@ namespace BLSVM
         explicit LiteralPool(std::istream& inputStream);
         LiteralPool() = default;
 
-        void defer_load(std::istream& inputStream);
+        void defer_load_lp(std::istream& inputStream);
+    };
+}
+
+namespace BLSVM
+{
+    class CompileTimeSizePool
+    {
+    private:
+        std::vector<size_t> _data;
+    protected:
+        [[nodiscard]] size_t get_size(size_t elementIndex) const;
+
+    public:
+        explicit CompileTimeSizePool(std::istream& inputStream);
+        CompileTimeSizePool() = default;
+
+        void defer_load_csz(std::istream& inputStream);
     };
 }
 

@@ -1,3 +1,7 @@
+#section: compileTimeSizes //8 bit code
+[size] //64 bit size_t
+[size]
+...
 #section: literals //8 bit code for pre-processor to read
 [size] //64 bit Count of how many literals
 [size][data] //64bit + n byte data for literals

@@ -56,7 +56,7 @@ namespace BLSVM
         inline constexpr instruction_t OPND_C_MASK = 0x0000000000FFFF00;
         inline constexpr instruction_t FLAGBT_MASK = 0x00000000000000FF;
 
-        inline constexpr operand_t OPND_TYPE_MASK = 0b1000'0000'0000'0000;                      //Tells the VM whether this points to a register (1) or constant pool (0)
+        inline constexpr operand_t OPND_TYPE_MASK = 0b1000'0000'0000'0000;                      //Tells the VM whether this points to a register (1) or constant pool (0).
 
         inline constexpr uint8_t OPCODE_SHIFT = 56;
         inline constexpr uint8_t OPND_A_SHIFT = 40;
@@ -85,7 +85,11 @@ namespace BLSVM
             MUL_SCI,
             DIV_SCI,
 
-            CLING,              // This will tell a register to cling to a value from the stack/heap
+            ALLOC_STACK,
+            ALLOC_HEAP,
+
+            CLING_STACK,              // This will tell a register to cling to a value from the stack/heap
+            CLING_HEAP,
             JUMP,
 
             ARG_DENOTE,         // This will denote a register as an argument to be used in the current call frame.

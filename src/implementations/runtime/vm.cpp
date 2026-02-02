@@ -108,7 +108,7 @@ namespace BLSVM
 
     }
 
-    void VM::defer_init(std::istream &inputStream)
+    void VM::defer_load_vm(std::istream &inputStream)
     {
         Bytecode::instruction_t instruction;
 
@@ -147,6 +147,30 @@ namespace BLSVM
             addResult = aValue + bValue + (addResult >> sizeof(ubyte_t)*8);
             dest.loc[i] = static_cast<ubyte_t>(addResult & UNSIGNED_BYTE_MASK);
         }
+    }
+
+    void VM::_operation_ALLOC_STACK(Bytecode::Instruction instruction)
+    {
+        size_t compileTimeSizeIndex = static_cast<size_t>(instruction.a & (~Bytecode::OPND_TYPE_MASK));
+
+        size_t compileTimeSize = CompileTimeSizePool::get_size(compileTimeSizeIndex);
+
+        Stack::push(compileTimeSize);
+    }
+
+    void VM::_operation_CLING_STACK(Bytecode::Instruction instruction)
+    {
+        if (!Bytecode::is_register(instruction.a)) throw std::runtime_error("Invalid operand for CLING"); //TODO THROW
+        if (Bytecode::is_register(instruction.b)) throw std::runtime_error("Invalid operand for CLING"); //TODO THROW
+
+        auto dest = get_register(instruction.a);
+
+        if (!(dest.info & REG_FLAG_WRITABLE)) throw std::runtime_error("Invalid operand for CLING"); // TODO THROW
+
+        size_t stackIndex = static_cast<size_t>(instruction.b & (~Bytecode::OPND_TYPE_MASK));
+
+        dest.loc = Stack::get_ptr(stackIndex);
+        dest.size = Stack::get_size(stackIndex);
     }
 
     void VM::_operation_DEBUG_DUMP(Bytecode::Instruction instruction)

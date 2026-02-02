@@ -70,7 +70,7 @@ namespace BLSVM
 
     inline std::ostream& OutputStream = std::cout;
 
-    class VM : public Stack, public LiteralPool
+    class VM : public Stack, public LiteralPool, public CompileTimeSizePool
     {
     private:
         std::array<Register, REGISTER_COUNT> _registers{};
@@ -89,12 +89,14 @@ namespace BLSVM
 
     public:
         VM();
-        void defer_init(std::istream& inputStream);
+        void defer_load_vm(std::istream& inputStream);
 
         void boot();
 
     private:
         void _operation_UNSIGNED_ADD(Bytecode::Instruction instruction);
+        void _operation_ALLOC_STACK(Bytecode::Instruction instruction);
+        void _operation_CLING_STACK(Bytecode::Instruction instruction);
         void _operation_DEBUG_DUMP(Bytecode::Instruction instruction);
     };
 }

@@ -30,7 +30,17 @@ namespace BLSVM
     {
         if (_stackPointer + static_cast<ptrdiff_t>(size) > STACK_SIZE) throw std::runtime_error("Stack Class Error Temporary"); //TODO THROW
 
-        memmove(_memory.data() + _stackPointer, data, size);
+        std::memmove(_memory.data() + _stackPointer, data, size);
+
+        _elementOffsets.emplace_back(_stackPointer, size);
+        _stackPointer += static_cast<ptrdiff_t>(size);
+    }
+
+    void Stack::push(size_t size)
+    {
+        if (_stackPointer + static_cast<ptrdiff_t>(size) > STACK_SIZE) throw std::runtime_error("Stack Class Error Temporary"); //TODO THROW
+
+        std::memset(_memory.data() + _stackPointer, 0, size);
 
         _elementOffsets.emplace_back(_stackPointer, size);
         _stackPointer += static_cast<ptrdiff_t>(size);
@@ -69,11 +79,11 @@ namespace BLSVM
 
     LiteralPool::LiteralPool(std::istream& inputStream)
     {
-        defer_load(inputStream);
+        defer_load_lp(inputStream);
     }
 
 
-    void LiteralPool::defer_load(std::istream &inputStream)
+    void LiteralPool::defer_load_lp(std::istream &inputStream)
     {
         ptrdiff_t  memoryOffset = 0;
         size_t literalCount;
