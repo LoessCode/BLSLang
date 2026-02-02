@@ -105,6 +105,8 @@ namespace BLSVM
 
         _operations[static_cast<size_t>(Bytecode::OpCode::UNSIGNED_ADD)] = &VM::_operation_UNSIGNED_ADD;
         _operations[static_cast<size_t>(Bytecode::OpCode::DEBUG_DUMP)] = &VM::_operation_DEBUG_DUMP;
+        _operations[static_cast<size_t>(Bytecode::OpCode::ALLOC_STACK)] = &VM::_operation_ALLOC_STACK;
+        _operations[static_cast<size_t>(Bytecode::OpCode::CLING_STACK)] = &VM::_operation_CLING_STACK;
 
     }
 
