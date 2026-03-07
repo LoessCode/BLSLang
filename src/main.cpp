@@ -144,6 +144,19 @@ int main2()
     auto csz_map = flattener.get_compile_time_size_map();
     auto literal_map = flattener.get_literal_map();
     auto prec_buf = flattener.get_precursor_buffer();
+    auto dumpinst = BLSL::Precursor::Instruction{
+        BLSVM::Bytecode::OpCode::DEBUG_DUMP,
+    };
+    dumpinst.a = {BLSL::Precursor::OperandType::REGISTER_GENERAL, 144};
+
+    prec_buf->push_back(dumpinst);
+
+    dumpinst.a.index = 146;
+    prec_buf->push_back(dumpinst);
+
+    dumpinst.a.index = 148;
+    prec_buf->push_back(dumpinst);
+
 
     {
         std::cout << "\nCSZs: \n";

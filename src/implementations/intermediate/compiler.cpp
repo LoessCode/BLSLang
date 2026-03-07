@@ -33,13 +33,13 @@ BLSL::Precursor::Operand BLSL::Flattener::_traverse_expression(ASTNode::Node* no
 {
     if (auto literal = dynamic_cast<ASTNode::Literal*>(node))
     {
-        if (!_literalMap.contains(literal->value)) _literalMap[literal->value] = std::make_pair(_literalIndex++, LiteralType());
+        if (!_literalMap.contains(literal->value)) _literalMap[literal->value] = std::make_pair(_literalIndex++, literal->type);
         return Precursor::Operand{Precursor::OperandType::LITERAL, _literalMap.at(literal->value).first};
     }
 
     if (auto variable = dynamic_cast<ASTNode::Variable*>(node))
     {
-        return Precursor::Operand{Precursor::OperandType::VARIABLE,
+        return Precursor::Operand{Precursor::OperandType::VIRTUAL_REGISTER_GENERAL,
             _cling_variable(variable)
         };
     }
@@ -65,7 +65,7 @@ size_t BLSL::Flattener::_cling_variable(const ASTNode::Variable *node)
         Precursor::Operand{Precursor::OperandType::STACK_INDEX, _variableMap.at(node->identifier).second}
     };
 
-    _virtualRegisterLifetimes[_virtualRegisterIndex++] = _precursorBuffer->size();
+    _virtualRegisterLifetimes[_virtualRegisterIndex] = _precursorBuffer->size();
     _precursorBuffer->emplace_back(instruction);
 
     _virtualRegisterLifetimes.emplace(_virtualRegisterIndex, _precursorBuffer->size()-1);
@@ -110,6 +110,11 @@ void BLSL::Flattener::visit(ASTNode::BinaryOperator *node)
     Precursor::Instruction instruction = {
         OPERATOR_OPCODE_MAP.at(node->type)
     };
+
+    if (instruction.opCode == BLSVM::Bytecode::OpCode::SET)
+    {
+
+    }
 
     instruction.a = _traverse_expression(node->left.get());
     instruction.b = _traverse_expression(node->right.get());
@@ -266,13 +271,14 @@ std::vector<BLSVM::ubyte_t> BLSL::Encoder::encode_literal(std::string value, Lit
             break;
 
         case LiteralType::BIN:
-            literal.reserve(value.length()/8);
-            for (size_t i = 0; i < value.length(); i += 8)
+            literal.reserve(value.size()/8);
+            std::cout << value << " " << value.size() << std::endl;
+            for (size_t i = 0; i < value.size(); i += 8)
             {
                 BLSVM::ubyte_t ubyte = 0;
                 for (size_t j = 0; j < 8; ++j)
                 {
-                    ubyte |= static_cast<BLSVM::ubyte_t>(value[i+j] == '1' ? 1 : 0) << (7-j);
+                    ubyte += static_cast<BLSVM::ubyte_t>((value[i+j] == '1' ? 0b1 : 0b0) << (7-j)) ;
                 }
                 literal.push_back(ubyte);
             }

@@ -78,7 +78,7 @@ namespace BLSL
         {OperatorType::BW_AND, {110, 112}},
         {OperatorType::BW_OR, {100, 102}},
 
-        {OperatorType::ASSIGN_EQUATE, {0, 1000}}
+        {OperatorType::ASSIGN_EQUATE, {1000, 0}}
     };
 
     const std::unordered_map<OperatorType, int> PREFIX_PRECEDENCE = {

@@ -7,6 +7,7 @@
 #include <print>
 #include <ranges>
 #include <array>
+#include <iostream>
 #include <utility>
 
 static const std::string LINE_COMMENT_START = "//";
@@ -180,7 +181,7 @@ std::optional<BLSL::Token> BLSL::Lexer::_lex_number()
         }
 
         //padding. For example 101 becomes 00000101. 11101110 remains 11101110
-        token.value->insert(token.value->begin(), token.value->size() % 8, '0');
+        if (token.value->size() % 8 != 0) token.value->insert(token.value->begin(), 8 - token.value->size() % 8, '0');
 
         return token;
     }

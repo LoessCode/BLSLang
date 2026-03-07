@@ -75,7 +75,7 @@ namespace BLSVM
             }
         }
 
-
+        _operations[static_cast<size_t>(Bytecode::OpCode::SET)] = &VM::_operation_SET;
         _operations[static_cast<size_t>(Bytecode::OpCode::UNSIGNED_ADD)] = &VM::_operation_UNSIGNED_ADD;
         _operations[static_cast<size_t>(Bytecode::OpCode::DEBUG_DUMP)] = &VM::_operation_DEBUG_DUMP;
         _operations[static_cast<size_t>(Bytecode::OpCode::ALLOC_STACK)] = &VM::_operation_ALLOC_STACK;
@@ -101,6 +101,34 @@ namespace BLSVM
             i++;
             (this->*_operations[static_cast<size_t>(instruction.opcode)])(instruction);
         }
+    }
+
+    void VM::_operation_SET(Bytecode::Instruction instruction)
+    {
+        if (!Bytecode::is_register(instruction.a)) throw std::runtime_error("Invalid operand for SET"); //TODO THROW
+        auto dest = get_register(instruction.a);
+
+        if (!Bytecode::is_register(instruction.b))
+        {
+
+            auto literal = read_data(static_cast<size_t>(instruction.b));
+            size_t literalSize = read_size(static_cast<size_t>(instruction.b));
+
+            for (size_t i = 0; i < literalSize; i++)
+            {
+                dest.loc[dest.size-literalSize+i] = literal[i];
+            }
+        }
+        else
+        {
+            auto reg = get_register(instruction.b);
+
+            for (size_t i = 0; i < reg.size; i++)
+            {
+                dest.loc[i] = reg.loc[i];
+            }
+        }
+
     }
 
     void VM::_operation_UNSIGNED_ADD(Bytecode::Instruction instruction)
@@ -146,18 +174,20 @@ namespace BLSVM
 
         size_t stackIndex = static_cast<size_t>(instruction.b & (~Bytecode::OPND_TYPE_MASK));
 
-        dest.loc = Stack::get_ptr(stackIndex);
         dest.size = Stack::get_size(stackIndex);
-        dest.size;
+        dest.loc = Stack::get_ptr(stackIndex);
+
     }
 
     void VM::_operation_DEBUG_DUMP(Bytecode::Instruction instruction)
     {
         View view = view_operand(instruction.a);
-        for (size_t i = 0; i < view.size; i++)
+        const auto debugsize = view.size;
+        for (size_t i = view.size; i > 0; i--)
         {
-            OutputStream << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned>(view.loc[i]) << ' ';
+            OutputStream << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned>(view.loc[i-1]) << ' ';
         }
+        OutputStream << std::endl;
     }
 }
 

@@ -46,6 +46,7 @@ namespace BLSVM
         void boot();
 
     private:
+        void _operation_SET(Bytecode::Instruction instruction);
         void _operation_UNSIGNED_ADD(Bytecode::Instruction instruction);
         void _operation_ALLOC_STACK(Bytecode::Instruction instruction);
         void _operation_CLING_STACK(Bytecode::Instruction instruction);
