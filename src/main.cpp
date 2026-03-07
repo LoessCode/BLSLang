@@ -145,34 +145,71 @@ int main2()
     auto literal_map = flattener.get_literal_map();
     auto prec_buf = flattener.get_precursor_buffer();
 
-    std::cout << "\nCSZs: \n";
-    for (const auto& [key, value] : csz_map)
     {
-        std::cout << key << ": " << value << "\n";
-    }
-    std::cout << "\nLiterals: \n";
-    for (const auto& [key, value] : literal_map)
-    {
-        std::cout << "val: " << key << " index: " << value.first << " tp: " << static_cast<int>(value.second) << "\n";
+        std::cout << "\nCSZs: \n";
+        for (const auto& [key, value] : csz_map)
+        {
+            std::cout << key << ": " << value << "\n";
+        }
+        std::cout << "\nLiterals: \n";
+        for (const auto& [key, value] : literal_map)
+        {
+            std::cout << "val: " << key << " index: " << value.first << " tp: " << static_cast<int>(value.second) << "\n";
+        }
+
+        std::cout << "\nInstructions: \n";
+        for (const auto& prec : *prec_buf)
+        {
+            std::cout << "opcode: " << static_cast<int>(prec.opCode);
+            std::cout << "\n\t a: " << static_cast<int>(prec.a.type) << " idx: " << prec.a.index;
+            std::cout << "\n\t b: " << static_cast<int>(prec.b.type) << " idx: " << prec.b.index;
+            std::cout << "\n\t c: " << static_cast<int>(prec.c.type) << " idx: " << prec.c.index;
+            std::cout << "\n";
+        }
     }
 
-    std::cout << "\nInstructions: \n";
-    for (const auto& prec : *prec_buf)
+    BLSL::RegisterPass registerPass(std::move(prec_buf), flattener.get_register_lifetime_buffer());
+
+    registerPass.assign_real_registers();
+    prec_buf = registerPass.get_precursor_buffer();
+
     {
-        std::cout << "opcode: " << static_cast<int>(prec.opCode);
-        std::cout << "\n\t a: " << static_cast<int>(prec.a.type) << " idx: " << prec.a.index;
-        std::cout << "\n\t b: " << static_cast<int>(prec.b.type) << " idx: " << prec.b.index;
-        std::cout << "\n\t c: " << static_cast<int>(prec.c.type) << " idx: " << prec.c.index;
-        std::cout << "\n";
+        std::cout << "\nCSZs: \n";
+        for (const auto& [key, value] : csz_map)
+        {
+            std::cout << key << ": " << value << "\n";
+        }
+        std::cout << "\nLiterals: \n";
+        for (const auto& [key, value] : literal_map)
+        {
+            std::cout << "val: " << key << " index: " << value.first << " tp: " << static_cast<int>(value.second) << "\n";
+        }
+
+        std::cout << "\nInstructions: \n";
+        for (const auto& prec : *prec_buf)
+        {
+            std::cout << "opcode: " << static_cast<int>(prec.opCode);
+            std::cout << "\n\t a: " << static_cast<int>(prec.a.type) << " idx: " << prec.a.index;
+            std::cout << "\n\t b: " << static_cast<int>(prec.b.type) << " idx: " << prec.b.index;
+            std::cout << "\n\t c: " << static_cast<int>(prec.c.type) << " idx: " << prec.c.index;
+            std::cout << "\n";
+        }
     }
+
+    std::ofstream outputFile("../samples/out.blsbyc", std::ios::binary);
+    BLSL::Encoder encoder(std::move(prec_buf), flattener.get_literal_map(), flattener.get_compile_time_size_map(), outputFile);
+    auto& result = encoder.write_out();
+    outputFile.close();
+
+    std::ifstream inputFile("../samples/out.blsbyc", std::ios::binary);
+    BLSVM::Bootloader bootloader{inputFile};
+
+    bootloader.load();
+    bootloader.boot();
+
 }
 
 int main()
 {
     main2();
 }
-
-
-/*
- *
- */

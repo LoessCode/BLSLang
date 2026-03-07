@@ -17,7 +17,14 @@ BLSVM::Bytecode::operand_t BLSL::Precursor::to_primitive_operand(Operand operand
 {
     BLSVM::Bytecode::operand_t outOperand = static_cast<BLSVM::Bytecode::operand_t>(operand.index) & (~BLSVM::Bytecode::OPND_TYPE_MASK);
 
-    outOperand |= (operand.type == OperandType::LITERAL) ? 0 : BLSVM::Bytecode::OPND_TYPE_MASK;
+    switch (operand.type)
+    {
+        case OperandType::REGISTER_GENERAL:
+            outOperand |= BLSVM::Bytecode::OPND_TYPE_MASK;
+        //TODO OTHER CASES
+        default:
+            break;
+    }
 
     return outOperand;
 }
@@ -54,9 +61,11 @@ size_t BLSL::Flattener::_cling_variable(const ASTNode::Variable *node)
 
     Precursor::Instruction instruction = {
         BLSVM::Bytecode::OpCode::CLING_STACK,
-        Precursor::Operand{Precursor::OperandType::VARIABLE, _variableMap.at(node->identifier).second},
+        Precursor::Operand{Precursor::OperandType::VIRTUAL_REGISTER_GENERAL, _virtualRegisterIndex},
+        Precursor::Operand{Precursor::OperandType::STACK_INDEX, _variableMap.at(node->identifier).second}
     };
 
+    _virtualRegisterLifetimes[_virtualRegisterIndex++] = _precursorBuffer->size();
     _precursorBuffer->emplace_back(instruction);
 
     _virtualRegisterLifetimes.emplace(_virtualRegisterIndex, _precursorBuffer->size()-1);
@@ -311,9 +320,9 @@ std::ostream & BLSL::Encoder::write_out() const
 
     for (const auto &compileTimeSize: _compileTimeSizes | std::views::keys)
     {
+
         write_val<size_t>(compileTimeSize);
     }
-
     // Writing out the literals
     write_section_header(BLSVM::Bytecode::Section::LITERALS);
     write_val<size_t>(_literalMap.size());
@@ -327,6 +336,7 @@ std::ostream & BLSL::Encoder::write_out() const
             write_val<BLSVM::ubyte_t>(byte);
         }
     }
+
 
     write_section_header(BLSVM::Bytecode::Section::INSTRUCTIONS);
     // Writing out the code section

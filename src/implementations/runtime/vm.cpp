@@ -95,8 +95,10 @@ namespace BLSVM
 
     void VM::boot()
     {
+        size_t i = 0;
         for (const auto& instruction : _program)
         {
+            i++;
             (this->*_operations[static_cast<size_t>(instruction.opcode)])(instruction);
         }
     }
@@ -126,7 +128,7 @@ namespace BLSVM
 
     void VM::_operation_ALLOC_STACK(Bytecode::Instruction instruction)
     {
-        size_t compileTimeSizeIndex = static_cast<size_t>(instruction.a & (~Bytecode::OPND_TYPE_MASK));
+        size_t compileTimeSizeIndex = static_cast<size_t>(instruction.b & (~Bytecode::OPND_TYPE_MASK));
 
         size_t compileTimeSize = CompileTimeSizePool::get_size(compileTimeSizeIndex);
 
@@ -135,8 +137,8 @@ namespace BLSVM
 
     void VM::_operation_CLING_STACK(Bytecode::Instruction instruction)
     {
-        if (!Bytecode::is_register(instruction.a)) throw std::runtime_error("Invalid operand for CLING"); //TODO THROW
-        if (Bytecode::is_register(instruction.b)) throw std::runtime_error("Invalid operand for CLING"); //TODO THROW
+        if (!Bytecode::is_register(instruction.a)) throw std::runtime_error("Invalid operand(a) for CLING"); //TODO THROW
+        if (Bytecode::is_register(instruction.b)) throw std::runtime_error("Invalid operand(b) for CLING"); //TODO THROW
 
         auto& dest = get_register(instruction.a);
 

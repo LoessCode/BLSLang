@@ -89,6 +89,7 @@ namespace BLSL
         Precursor::PrecursorBufferUP_t get_precursor_buffer() {return std::move(_precursorBuffer);}
         Precursor::LiteralMap_t get_literal_map() {return _literalMap;}                                              // Yes these are expensive, but they're not recurring calls so it's okay.
         Precursor::CompileTimeSizeMap_t get_compile_time_size_map() {return _compileTimeSizes;}                     // Same as above
+        Precursor::RegisterLifetimeBuffer_t get_register_lifetime_buffer() {return _virtualRegisterLifetimes;}
 
     public:
         void visit(ASTNode::BodyNode* node) override;
@@ -129,7 +130,7 @@ namespace BLSL
         RegisterPass(Precursor::PrecursorBufferUP_t precursorBuffer, std::unordered_map<size_t, size_t> registerLifetimes);
 
         void assign_real_registers();
-
+        Precursor::PrecursorBufferUP_t get_precursor_buffer() {return std::move(_precursorBuffer);}
 
     };
 
