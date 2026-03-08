@@ -61,8 +61,6 @@ namespace BLSVM
         _elementOffsets.pop_back();
     }
 
-
-
     ubyte_t const * LiteralPool::read_data(size_t elementIndex) const
     {
         if (elementIndex >= _elementOffsets.size()) throw std::out_of_range("VM::read_data: invalid element index temporary"); //TODO THROW

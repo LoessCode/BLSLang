@@ -22,7 +22,7 @@ namespace BLSVM
 
     Register& VM::get_register(Bytecode::operand_t operand)
     {
-        size_t index = static_cast<size_t>(operand & (~Bytecode::OPND_TYPE_MASK));
+        const auto index = static_cast<size_t>(operand & (~Bytecode::OPND_TYPE_MASK));
 
         if (index >= REGISTER_COUNT) throw std::runtime_error("Invalid register"); // TODO THROW
         if (!Bytecode::is_register(operand)) throw std::runtime_error("Invalid register"); //TODO THROW
@@ -32,7 +32,7 @@ namespace BLSVM
 
     View VM::view_register(Bytecode::operand_t operand) const
     {
-        size_t index = static_cast<size_t>(operand & (~Bytecode::OPND_TYPE_MASK));
+        const auto index = static_cast<size_t>(operand & (~Bytecode::OPND_TYPE_MASK));
 
         if (index >= REGISTER_COUNT) throw std::runtime_error("Invalid register"); // TODO THROW
 
@@ -46,11 +46,11 @@ namespace BLSVM
 
     View VM::view_literal(Bytecode::operand_t operand) const
     {
-        size_t index = static_cast<size_t>(operand & (~Bytecode::OPND_TYPE_MASK));
+        const auto index = static_cast<size_t>(operand & (~Bytecode::OPND_TYPE_MASK));
 
         const View literal = {
-            read_data(index),
-            read_size(index),
+            _literalPool.read_data(index),
+            _literalPool.read_size(index),
         };
 
         return literal;
@@ -93,6 +93,16 @@ namespace BLSVM
         }
     }
 
+    void VM::defer_load_csz(std::istream &inputStream)
+    {
+        _compileTimeSizePool.defer_load_csz(inputStream);
+    }
+
+    void VM::defer_load_lp(std::istream &inputStream)
+    {
+        _literalPool.defer_load_lp(inputStream);
+    }
+
     void VM::boot()
     {
         size_t i = 0;
@@ -103,7 +113,7 @@ namespace BLSVM
         }
     }
 
-    void VM::_operation_SET(Bytecode::Instruction instruction)
+    void VM::_operation_SET(const Bytecode::Instruction instruction)
     {
         if (!Bytecode::is_register(instruction.a)) throw std::runtime_error("Invalid operand for SET"); //TODO THROW
         auto dest = get_register(instruction.a);
@@ -111,8 +121,8 @@ namespace BLSVM
         if (!Bytecode::is_register(instruction.b))
         {
 
-            auto literal = read_data(static_cast<size_t>(instruction.b));
-            size_t literalSize = read_size(static_cast<size_t>(instruction.b));
+            auto literal = _literalPool.read_data(static_cast<size_t>(instruction.b));
+            size_t literalSize = _literalPool.read_size(static_cast<size_t>(instruction.b));
 
             for (size_t i = 0; i < literalSize; i++)
             {
@@ -131,7 +141,7 @@ namespace BLSVM
 
     }
 
-    void VM::_operation_UNSIGNED_ADD(Bytecode::Instruction instruction)
+    void VM::_operation_UNSIGNED_ADD(const Bytecode::Instruction instruction)
     {
         if (!Bytecode::is_register(instruction.c)) throw std::runtime_error("Invalid operand for ADD"); //TODO THROW
 
@@ -154,38 +164,39 @@ namespace BLSVM
         }
     }
 
-    void VM::_operation_ALLOC_STACK(Bytecode::Instruction instruction)
+    void VM::_operation_ALLOC_STACK(const Bytecode::Instruction instruction)
     {
-        size_t compileTimeSizeIndex = static_cast<size_t>(instruction.b & (~Bytecode::OPND_TYPE_MASK));
+        const auto compileTimeSizeIndex = static_cast<size_t>(instruction.b & (~Bytecode::OPND_TYPE_MASK));
 
-        size_t compileTimeSize = CompileTimeSizePool::get_size(compileTimeSizeIndex);
+        const size_t compileTimeSize = _compileTimeSizePool.get_size(compileTimeSizeIndex);
 
-        Stack::push(compileTimeSize);
+        _stack.push(compileTimeSize);
     }
 
-    void VM::_operation_CLING_STACK(Bytecode::Instruction instruction)
+    void VM::_operation_CLING_STACK(const Bytecode::Instruction instruction)
     {
         if (!Bytecode::is_register(instruction.a)) throw std::runtime_error("Invalid operand(a) for CLING"); //TODO THROW
         if (Bytecode::is_register(instruction.b)) throw std::runtime_error("Invalid operand(b) for CLING"); //TODO THROW
 
-        auto& dest = get_register(instruction.a);
+        auto& reg = get_register(instruction.a);
 
-        if (!((dest.info & REGISTER_FLAG_MASK) & REG_FLAG_WRITABLE)) throw std::runtime_error("Invalid operand for CLING"); // TODO THROW
+        if (!((reg.info & REGISTER_FLAG_MASK) & REG_FLAG_WRITABLE)) throw std::runtime_error("Invalid operand for CLING"); // TODO THROW
 
-        size_t stackIndex = static_cast<size_t>(instruction.b & (~Bytecode::OPND_TYPE_MASK));
+        const auto stackIndex = static_cast<size_t>(instruction.b & (~Bytecode::OPND_TYPE_MASK));
 
-        dest.size = Stack::get_size(stackIndex);
-        dest.loc = Stack::get_ptr(stackIndex);
+        reg.size = _stack.get_size(stackIndex);
+        reg.loc = _stack.get_ptr(stackIndex);
 
     }
 
-    void VM::_operation_DEBUG_DUMP(Bytecode::Instruction instruction)
+    // ReSharper disable once CppMemberFunctionMayBeConst
+    void VM::_operation_DEBUG_DUMP(const Bytecode::Instruction instruction)
     {
-        View view = view_operand(instruction.a);
-        const auto debugsize = view.size;
-        for (size_t i = view.size; i > 0; i--)
+        auto [loc, size] = view_operand(instruction.a);
+
+        for (size_t i = size; i > 0; i--)
         {
-            OutputStream << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned>(view.loc[i-1]) << ' ';
+            OutputStream << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned>(loc[i-1]) << ' ';
         }
         OutputStream << std::endl;
     }

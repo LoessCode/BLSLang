@@ -32,7 +32,7 @@ namespace BLSVM
         std::vector<std::pair<ptrdiff_t, size_t>> _elementOffsets;                  //Stores the offsets of elements within the stack and stores their sizes.
         ptrdiff_t _stackPointer;
 
-    protected:
+    public:
         [[nodiscard]] ubyte_t* get_ptr(size_t elementIndex);
         [[nodiscard]] size_t get_size(size_t elementIndex) const;
 
@@ -45,6 +45,8 @@ namespace BLSVM
         void pop();
 
     };
+
+
 }
 
 namespace BLSVM
@@ -55,7 +57,7 @@ namespace BLSVM
         std::vector<ubyte_t> _memory;
         std::vector<std::pair<ptrdiff_t, size_t>> _elementOffsets;
 
-    protected:
+    public:
         [[nodiscard]] ubyte_t const* read_data(size_t elementIndex) const;
         [[nodiscard]] size_t read_size(size_t elementIndex) const;
 
@@ -73,7 +75,7 @@ namespace BLSVM
     {
     private:
         std::vector<size_t> _data;
-    protected:
+    public:
         [[nodiscard]] size_t get_size(size_t elementIndex) const;
 
     public:

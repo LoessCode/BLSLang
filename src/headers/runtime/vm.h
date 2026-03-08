@@ -22,13 +22,18 @@ namespace BLSVM
 
     inline std::ostream& OutputStream = std::cout;
 
-    class VM : public Stack, public LiteralPool, public CompileTimeSizePool
+    class VM
     {
     private:
         std::array<Register, REGISTER_COUNT> _registers{};
         std::array<operation_f, sizeof(Bytecode::opcode_t)*256> _operations{};
 
         std::vector<Bytecode::Instruction> _program;
+
+        Stack _stack;
+        Stack _scratch;
+        LiteralPool _literalPool;
+        CompileTimeSizePool _compileTimeSizePool;
 
     private:
         [[nodiscard]] Register& get_register(Bytecode::operand_t operand);
@@ -42,7 +47,8 @@ namespace BLSVM
     public:
         VM();
         void defer_load_vm(std::istream& inputStream);
-
+        void defer_load_csz(std::istream& inputStream);
+        void defer_load_lp(std::istream& inputStream);
         void boot();
 
     private:
